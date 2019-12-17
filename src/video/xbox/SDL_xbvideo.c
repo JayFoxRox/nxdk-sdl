@@ -104,7 +104,6 @@ XBOX_GL_UnloadLibrary(_THIS)
 #if 0
         eglTerminate(_this->gl_data->display);
 #endif
-    assert(0);
 }
 
 static SDL_GLContext
@@ -187,7 +186,6 @@ XBOX_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
             return SDL_SetError("Unable to make EGL context current");
         }
 #endif
-    assert(0);
     return 0;
 }
 
@@ -250,7 +248,6 @@ XBOX_GL_DeleteContext(_THIS, SDL_GLContext context)
         }
     }
 #endif
-    assert(0);
     return;
 }
 
