@@ -24,6 +24,10 @@
 #include "core/windows/SDL_windows.h"
 #endif
 
+#if defined(__XBOX__)
+#include <hal/debug.h>
+#endif
+
 /* Simple log messages in SDL */
 
 #include "SDL_error.h"
@@ -392,6 +396,10 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 
         SDL_free(tstr);
         SDL_small_free(output, isstack);
+    }
+#elif defined(__XBOX__)
+    {
+        debugPrint("%s: %s\n", SDL_priority_prefixes[priority], message);
     }
 #elif defined(__ANDROID__)
     {

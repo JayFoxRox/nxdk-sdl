@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#include <hal/debug.h>
+
 #include "../SDL_internal.h"
 
 /* Allow access to a raw mixing buffer */
@@ -1236,17 +1239,17 @@ open_audio_device(const char *devname, int iscapture,
     SDL_bool build_stream;
     void *handle = NULL;
     int i = 0;
-
+debugPrint("YYY %d\n", __LINE__);
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
         SDL_SetError("Audio subsystem is not initialized");
         return 0;
     }
-
+debugPrint("YYY %d\n", __LINE__);
     if ((iscapture) && (!current_audio.impl.HasCaptureSupport)) {
         SDL_SetError("No capture support");
         return 0;
     }
-
+debugPrint("YYY %d\n", __LINE__);
     /* !!! FIXME: there is a race condition here if two devices open from two threads at once. */
     /* Find an available device ID... */
     for (id = min_id - 1; id < SDL_arraysize(open_devices); id++) {
@@ -1254,19 +1257,19 @@ open_audio_device(const char *devname, int iscapture,
             break;
         }
     }
-
+debugPrint("YYY %d\n", __LINE__);
     if (id == SDL_arraysize(open_devices)) {
         SDL_SetError("Too many open audio devices");
         return 0;
     }
-
+debugPrint("YYY %d\n", __LINE__);
     if (!obtained) {
         obtained = &_obtained;
     }
     if (!prepare_audiospec(desired, obtained)) {
         return 0;
     }
-
+debugPrint("YYY %d\n", __LINE__);
     /* If app doesn't care about a specific device, let the user override. */
     if (devname == NULL) {
         devname = SDL_getenv("SDL_AUDIO_DEVICE_NAME");
@@ -1281,7 +1284,7 @@ open_audio_device(const char *devname, int iscapture,
      * Also make sure that the simple case prevents multiple simultaneous
      *  opens of the default system device.
      */
-
+debugPrint("YYY %d\n", __LINE__);
     if ((iscapture) && (current_audio.impl.OnlyHasDefaultCaptureDevice)) {
         if ((devname) && (SDL_strcmp(devname, DEFAULT_INPUT_DEVNAME) != 0)) {
             SDL_SetError("No such device");
@@ -1296,6 +1299,7 @@ open_audio_device(const char *devname, int iscapture,
             }
         }
     } else if ((!iscapture) && (current_audio.impl.OnlyHasDefaultOutputDevice)) {
+debugPrint("YYY %d\n", __LINE__);
         if ((devname) && (SDL_strcmp(devname, DEFAULT_OUTPUT_DEVNAME) != 0)) {
             SDL_SetError("No such device");
             return 0;
@@ -1325,7 +1329,7 @@ open_audio_device(const char *devname, int iscapture,
         }
         SDL_UnlockMutex(current_audio.detectionLock);
     }
-
+debugPrint("YYY %d\n", __LINE__);
     if (!current_audio.impl.AllowsArbitraryDeviceNames) {
         /* has to be in our device list, or the default device. */
         if ((handle == NULL) && (devname != NULL)) {
@@ -1339,6 +1343,7 @@ open_audio_device(const char *devname, int iscapture,
         SDL_OutOfMemory();
         return 0;
     }
+debugPrint("YYY %d\n", __LINE__);
     device->id = id + 1;
     device->spec = *obtained;
     device->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
@@ -1357,16 +1362,17 @@ open_audio_device(const char *devname, int iscapture,
             return 0;
         }
     }
-
+debugPrint("YYY %d\n", __LINE__);
     if (current_audio.impl.OpenDevice(device, handle, devname, iscapture) < 0) {
         close_audio_device(device);
         return 0;
     }
 
+debugPrint("YYY %d - %p %p\n", __LINE__, device, device->hidden);
     /* if your target really doesn't need it, set it to 0x1 or something. */
     /* otherwise, close_audio_device() won't call impl.CloseDevice(). */
     SDL_assert(device->hidden != NULL);
-
+debugPrint("YYY %d\n", __LINE__);
     /* See if we need to do any conversion */
     build_stream = SDL_FALSE;
     if (obtained->freq != device->spec.freq) {
@@ -1397,9 +1403,9 @@ open_audio_device(const char *devname, int iscapture,
             build_stream = SDL_TRUE;
         }
     }
-
+debugPrint("YYY %d\n", __LINE__);
     SDL_CalculateAudioSpec(obtained);  /* recalc after possible changes. */
-
+debugPrint("YYY %d\n", __LINE__);
     device->callbackspec = *obtained;
 
     if (build_stream) {
@@ -1437,7 +1443,7 @@ open_audio_device(const char *devname, int iscapture,
         device->work_buffer_len = device->spec.size;
     }
     SDL_assert(device->work_buffer_len > 0);
-
+debugPrint("YYY %d\n", __LINE__);
     device->work_buffer = (Uint8 *) SDL_malloc(device->work_buffer_len);
     if (device->work_buffer == NULL) {
         close_audio_device(device);
@@ -1446,9 +1452,10 @@ open_audio_device(const char *devname, int iscapture,
     }
 
     open_devices[id] = device;  /* add it to our list of open devices. */
-
+debugPrint("YYY %d\n", __LINE__);
     /* Start the audio thread if necessary */
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
+debugPrint("YYY %d\n", __LINE__);
         /* Start the audio thread */
         /* !!! FIXME: we don't force the audio thread stack size here if it calls into user code, but maybe we should? */
         /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
@@ -1510,6 +1517,7 @@ SDL_OpenAudioDevice(const char *device, int iscapture,
                     const SDL_AudioSpec * desired, SDL_AudioSpec * obtained,
                     int allowed_changes)
 {
+debugPrint("YYY %d\n", __LINE__);
     return open_audio_device(device, iscapture, desired, obtained,
                              allowed_changes, 2);
 }
