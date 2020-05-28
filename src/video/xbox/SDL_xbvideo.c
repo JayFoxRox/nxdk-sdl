@@ -106,6 +106,9 @@ XBOX_GL_UnloadLibrary(_THIS)
 #endif
 }
 
+//FIXME: !!!
+#define EGLCHK(...) __VA_ARGS__
+
 static SDL_GLContext
 XBOX_GL_CreateContext(_THIS, SDL_Window * window)
 {
@@ -113,10 +116,14 @@ XBOX_GL_CreateContext(_THIS, SDL_Window * window)
     SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
 
         EGLint attribs[32];
+#endif
         EGLDisplay display;
         EGLContext context;
+#if 0
         EGLSurface surface;
+#endif
         EGLConfig config;
+#if 0
         EGLint num_configs;
         int i;
 
@@ -161,8 +168,9 @@ XBOX_GL_CreateContext(_THIS, SDL_Window * window)
 
         EGLCHK(eglGetConfigAttrib(display, config, EGL_WIDTH, &width));
         EGLCHK(eglGetConfigAttrib(display, config, EGL_HEIGHT, &height));
-
+#endif
         EGLCHK(context = eglCreateContext(display, config, NULL, NULL));
+#if 0
         EGLCHK(surface = eglCreateWindowSurface(display, config, 0, NULL));
         EGLCHK(eglMakeCurrent(display, surface, surface, context));
 
