@@ -47,6 +47,9 @@
 #include "SDL_xbevents_c.h"
 #include "SDL_xbframebuffer_c.h"
 
+#include <EGL/egl.h>
+#include <assert.h>
+
 #define XBOXVID_DRIVER_NAME "xbox"
 
 /* Initialization/Query functions */
@@ -74,6 +77,188 @@ XBOX_DeleteDevice(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
+static int
+XBOX_GL_LoadLibrary(_THIS, const char *path)
+{
+  return 0;
+}
+
+/* pspgl doesn't provide this call, so stub it out since SDL requires it.
+#define GLSTUB(func,params) void func params {}
+
+GLSTUB(glOrtho,(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top,
+                    GLdouble zNear, GLdouble zFar))
+*/
+void *
+XBOX_GL_GetProcAddress(_THIS, const char *proc)
+{
+#if 0
+        return eglGetProcAddress(proc);
+#endif
+    assert(0);
+}
+
+static void
+XBOX_GL_UnloadLibrary(_THIS)
+{
+#if 0
+        eglTerminate(_this->gl_data->display);
+#endif
+}
+
+//FIXME: !!!
+#define EGLCHK(...) __VA_ARGS__
+
+static SDL_GLContext
+XBOX_GL_CreateContext(_THIS, SDL_Window * window)
+{
+#if 0
+    SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
+
+        EGLint attribs[32];
+#endif
+        EGLDisplay display;
+        EGLContext context;
+#if 0
+        EGLSurface surface;
+#endif
+        EGLConfig config;
+#if 0
+        EGLint num_configs;
+        int i;
+
+
+    /* EGL init taken from glutCreateWindow() in PSPGL's glut.c. */
+        EGLCHK(display = eglGetDisplay(0));
+        EGLCHK(eglInitialize(display, NULL, NULL));
+    wdata->uses_gles = SDL_TRUE;
+        window->flags |= SDL_WINDOW_FULLSCREEN;
+
+        /* Setup the config based on SDL's current values. */
+        i = 0;
+        attribs[i++] = EGL_RED_SIZE;
+        attribs[i++] = _this->gl_config.red_size;
+        attribs[i++] = EGL_GREEN_SIZE;
+        attribs[i++] = _this->gl_config.green_size;
+        attribs[i++] = EGL_BLUE_SIZE;
+        attribs[i++] = _this->gl_config.blue_size;
+        attribs[i++] = EGL_DEPTH_SIZE;
+        attribs[i++] = _this->gl_config.depth_size;
+
+        if (_this->gl_config.alpha_size)
+        {
+            attribs[i++] = EGL_ALPHA_SIZE;
+            attribs[i++] = _this->gl_config.alpha_size;
+        }
+        if (_this->gl_config.stencil_size)
+        {
+            attribs[i++] = EGL_STENCIL_SIZE;
+            attribs[i++] = _this->gl_config.stencil_size;
+        }
+
+        attribs[i++] = EGL_NONE;
+
+        EGLCHK(eglChooseConfig(display, attribs, &config, 1, &num_configs));
+
+        if (num_configs == 0)
+        {
+            SDL_SetError("No valid EGL configs for requested mode");
+            return 0;
+        }
+
+        EGLCHK(eglGetConfigAttrib(display, config, EGL_WIDTH, &width));
+        EGLCHK(eglGetConfigAttrib(display, config, EGL_HEIGHT, &height));
+#endif
+        EGLCHK(context = eglCreateContext(display, config, NULL, NULL));
+#if 0
+        EGLCHK(surface = eglCreateWindowSurface(display, config, 0, NULL));
+        EGLCHK(eglMakeCurrent(display, surface, surface, context));
+
+        _this->gl_data->display = display;
+        _this->gl_data->context = context;
+        _this->gl_data->surface = surface;
+
+
+    return context;
+#endif
+    return (SDL_GLContext)(EGLContext)1;
+}
+
+static int
+XBOX_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+{
+#if 0
+        if (!eglMakeCurrent(_this->gl_data->display, _this->gl_data->surface,
+                          _this->gl_data->surface, _this->gl_data->context))
+        {
+            return SDL_SetError("Unable to make EGL context current");
+        }
+#endif
+    return 0;
+}
+
+static int
+XBOX_GL_SetSwapInterval(_THIS, int interval)
+{
+#if 0
+    EGLBoolean status;
+    status = eglSwapInterval(_this->gl_data->display, interval);
+    if (status == EGL_TRUE) {
+        /* Return success to upper level */
+        _this->gl_data->swapinterval = interval;
+        return 0;
+    }
+#endif
+    /* Failed to set swap interval */
+    return SDL_SetError("Unable to set the EGL swap interval");
+}
+
+static int
+XBOX_GL_GetSwapInterval(_THIS)
+{
+#if 0
+    return _this->gl_data->swapinterval;
+#endif
+    assert(0);
+    return 0;
+}
+
+static int
+XBOX_GL_SwapWindow(_THIS, SDL_Window * window)
+{
+    if (!eglSwapBuffers(/*_this->gl_data->display, _this->gl_data->surface*/ 1, 1)) {
+        return SDL_SetError("eglSwapBuffers() failed");
+    }
+    return 0;
+}
+
+static void
+XBOX_GL_DeleteContext(_THIS, SDL_GLContext context)
+{
+#if 0
+    SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
+    EGLBoolean status;
+
+    if (phdata->egl_initialized != SDL_TRUE) {
+        SDL_SetError("PSP: GLES initialization failed, no OpenGL ES support");
+        return;
+    }
+
+    /* Check if OpenGL ES connection has been initialized */
+    if (_this->gl_data->display != EGL_NO_DISPLAY) {
+        if (context != EGL_NO_CONTEXT) {
+            status = eglDestroyContext(_this->gl_data->display, context);
+            if (status != EGL_TRUE) {
+                /* Error during OpenGL ES context destroying */
+                SDL_SetError("PSP: OpenGL ES context destroy error");
+                return;
+            }
+        }
+    }
+#endif
+    return;
+}
+
 static SDL_VideoDevice *
 XBOX_CreateDevice(int devindex)
 {
@@ -94,6 +279,16 @@ XBOX_CreateDevice(int devindex)
     device->CreateWindowFramebuffer = SDL_XBOX_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = SDL_XBOX_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = SDL_XBOX_DestroyWindowFramebuffer;
+
+    device->GL_LoadLibrary = XBOX_GL_LoadLibrary;
+    device->GL_GetProcAddress = XBOX_GL_GetProcAddress;
+    device->GL_UnloadLibrary = XBOX_GL_UnloadLibrary;
+    device->GL_CreateContext = XBOX_GL_CreateContext;
+    device->GL_MakeCurrent = XBOX_GL_MakeCurrent;
+    device->GL_SetSwapInterval = XBOX_GL_SetSwapInterval;
+    device->GL_GetSwapInterval = XBOX_GL_GetSwapInterval;
+    device->GL_SwapWindow = XBOX_GL_SwapWindow;
+    device->GL_DeleteContext = XBOX_GL_DeleteContext;
 
     device->free = XBOX_DeleteDevice;
 
