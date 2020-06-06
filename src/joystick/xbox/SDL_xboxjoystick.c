@@ -54,10 +54,6 @@ static int SDL_XBOX_JoystickInit(void) {
     return 0;
 }
 
-static bool joystickConnected(SDL_Joystick *joystick) {
-    return g_Pads[joystick->player_index].hPresent != 0;
-}
-
 static void SDL_XBOX_JoystickQuit(void) {
     XInput_Quit();
 }
@@ -71,7 +67,7 @@ static void SDL_XBOX_JoystickDetect() {
     return;
 }
 
-static const char* SDL_XBOX_JoystickNameForDeviceIndex(int index) {
+static const char* SDL_XBOX_JoystickGetDeviceName(int index) {
     switch (index) {
     case 0:
         return "Original Xbox Controller #1";
@@ -92,6 +88,9 @@ static int SDL_XBOX_JoystickGetDevicePlayerIndex(int index) {
     return index;
 }
 
+static void SDL_XBOX_JoystickSetDevicePlayerIndex(int device_index, int player_index) {
+}
+
 static SDL_JoystickGUID SDL_XBOX_JoystickGetDeviceGUID(int index) {
     /* FIXME: This should be implemented properly */
     SDL_JoystickGUID ret;
@@ -109,8 +108,6 @@ static int SDL_XBOX_JoystickOpen(SDL_Joystick *joystick, int index) {
     if (g_Pads[index].hPresent == 0) {
         return -1;
     }
-
-    joystick->player_index = index;
 
     joystick->hwdata = (pjoystick_hwdata)malloc(sizeof(joystick_hwdata));
     joystick->hwdata->padData = &g_Pads[index];
@@ -165,14 +162,13 @@ static void axisUpdate(SDL_Joystick *joystick, Sint16 value, int axis_index) {
 
 static int SDL_XBOX_JoystickRumble(SDL_Joystick *joystick,
                                    Uint16 low_frequency_rumble,
-                                   Uint16 high_frequency_rumble,
-                                   Uint32 duration_ms) {
+                                   Uint16 high_frequency_rumble) {
     /* FIXME: This should be implemented some day. */
     return SDL_Unsupported();
 }
 
 static void SDL_XBOX_JoystickUpdate(SDL_Joystick *joystick) {
-    if (!joystickConnected(joystick)) {
+    if (joystick->hwdata->padData->hPresent == 0) {
         return;
     }
 
@@ -232,8 +228,9 @@ SDL_JoystickDriver SDL_XBOX_JoystickDriver = {
     SDL_XBOX_JoystickInit,
     SDL_XBOX_JoystickGetCount,
     SDL_XBOX_JoystickDetect,
-    SDL_XBOX_JoystickNameForDeviceIndex,
+    SDL_XBOX_JoystickGetDeviceName,
     SDL_XBOX_JoystickGetDevicePlayerIndex,
+    SDL_XBOX_JoystickSetDevicePlayerIndex,
     SDL_XBOX_JoystickGetDeviceGUID,
     SDL_XBOX_JoystickGetDeviceInstanceID,
     SDL_XBOX_JoystickOpen,
